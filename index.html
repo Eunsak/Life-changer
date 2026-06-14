@@ -134,6 +134,32 @@
   /* STATS */
   .stats-week{padding:0 16px 10px}
   .week-bars{display:flex;align-items:flex-end;gap:6px;height:100px;margin-bottom:8px}
+
+  /* POIDS */
+  .poids-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:0 16px 10px}
+  .poids-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .poids-title{font-size:15px;font-weight:600}
+  .poids-add-btn{width:32px;height:32px;border-radius:50%;background:var(--accent);color:white;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;line-height:1}
+  .poids-stats-row{display:flex;gap:8px;margin-bottom:14px}
+  .poids-stat{flex:1;background:var(--surface2);border-radius:10px;padding:10px;text-align:center}
+  .poids-stat .val{font-size:17px;font-weight:600;font-family:var(--mono);color:var(--accent2)}
+  .poids-stat .lbl{font-size:10px;color:var(--text3);margin-top:2px}
+  .poids-stat .val.green{color:var(--success)}
+  .poids-stat .val.red{color:var(--danger)}
+  .poids-graph{height:90px;position:relative;margin-bottom:12px}
+  .poids-graph svg{width:100%;height:100%;overflow:visible}
+  .poids-entry-list{display:flex;flex-direction:column;gap:5px;max-height:150px;overflow-y:auto}
+  .poids-entry{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--surface2);border-radius:8px}
+  .poids-entry-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+  .poids-entry-val{font-size:14px;font-weight:600;font-family:var(--mono)}
+  .poids-entry-delta{font-size:11px;font-family:var(--mono)}
+  .poids-entry-delta.pos{color:var(--danger)}
+  .poids-entry-delta.neg{color:var(--success)}
+  .poids-objectif-row{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+  .poids-objectif-row input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:14px;outline:none;color:var(--text)}
+  .poids-objectif-row input:focus{border-color:var(--accent)}
+  .poids-objectif-label{font-size:12px;color:var(--text2);white-space:nowrap}
+  .poids-objectif-save{padding:8px 14px;border-radius:8px;background:var(--accent);color:white;font-size:13px;font-weight:600}
   .week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
   .week-bar-bg{flex:1;width:100%;background:var(--surface2);border-radius:4px;overflow:hidden;display:flex;align-items:flex-end}
   .week-bar-fill{width:100%;background:linear-gradient(0deg,var(--accent),var(--accent2));border-radius:4px;transition:height .4s ease;min-height:2px}
@@ -305,6 +331,22 @@
       </div>
     </div>
     <div class="stats-grid" id="stats-grid"></div>
+    <div class="section-label">Suivi du poids</div>
+    <div class="poids-card">
+      <div class="poids-header">
+        <div class="poids-title">⚖️ Mon poids</div>
+        <button class="poids-add-btn" onclick="openModal('poids')">＋</button>
+      </div>
+      <div class="poids-objectif-row">
+        <span class="poids-objectif-label">Objectif :</span>
+        <input type="number" id="poids-objectif-input" placeholder="ex: 75" step="0.1" min="1">
+        <span class="poids-objectif-label">kg</span>
+        <button class="poids-objectif-save" onclick="savePoidsObjectif()">OK</button>
+      </div>
+      <div id="poids-stats-row" class="poids-stats-row"></div>
+      <div class="poids-graph" id="poids-graph"></div>
+      <div class="poids-entry-list" id="poids-entry-list"></div>
+    </div>
     <div class="section-label">Objectifs</div>
     <div id="goal-list"></div>
     <div style="padding:0 16px 8px">
@@ -453,6 +495,21 @@
   </div>
 </div>
 
+<!-- MODAL POIDS -->
+<div class="modal-overlay" id="modal-poids" onclick="closeModalOnBg(event,'poids')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>Ajouter un poids</h2>
+    <input type="hidden" id="poids-edit-id">
+    <div class="field"><label>Poids (kg)</label><input type="number" id="poids-val" placeholder="Ex: 75.5" step="0.1" min="1"></div>
+    <div class="field"><label>Date</label><input type="date" id="poids-date"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('poids')">Annuler</button>
+      <button class="btn btn-primary" onclick="savePoids()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
 <!-- NOTE EDITOR -->
 <div class="note-editor" id="note-editor">
   <div class="note-editor-header" id="note-editor-header">
@@ -484,7 +541,7 @@
 const NOTE_COLORS={DEFAULT:'#FFFFFF',YELLOW:'#FFF9C4',GREEN:'#C8E6C9',BLUE:'#BBDEFB',PINK:'#F8BBD0',PURPLE:'#E1BEE7',BLACK:'#1a1a1a'};
 const TAGS=['Travail','Perso','Sport','Santé','Courses'];
 
-let state={tasks:[],reminders:[],notes:[],routines:[],goals:[],streak:0,lastStreakDate:'',statsHistory:{},fromagesAppris:{}};
+let state={tasks:[],reminders:[],notes:[],routines:[],goals:[],poids:[],poidsObjectif:null,streak:0,lastStreakDate:'',statsHistory:{},fromagesAppris:{}};
 let currentNoteColor='DEFAULT';
 let activeTaskFilter='all';
 let selectedTag='';
@@ -738,9 +795,10 @@ function renderStats(){
       </div>
     </div>`;
   }).join('');
+  renderPoids();
 }
 
-function render(){renderToday();renderTasks();renderReminders();renderNotes();renderStats();renderFromages();}
+function render(){renderToday();renderTasks();renderReminders();renderNotes();renderStats();renderPoids();renderFromages();}
 
 // ── TASKS CRUD ───────────────────────────────────────────
 function toggleTag(btn){
@@ -781,6 +839,10 @@ function openModal(type){
     document.getElementById('goal-target').value='';
     document.getElementById('goal-current').value='0';
     document.getElementById('goal-unit').value='';
+  } else if(type==='poids'){
+    document.getElementById('poids-edit-id').value='';
+    document.getElementById('poids-val').value='';
+    document.getElementById('poids-date').value=toDateStr(new Date());
   }
   document.getElementById('modal-'+type).classList.add('open');
 }
@@ -932,6 +994,102 @@ function updateGoal(id,delta){
 }
 
 function deleteGoal(id){state.goals=state.goals.filter(x=>x.id!==id);save();renderStats();toast('Objectif supprimé')}
+
+// ── POIDS CRUD ───────────────────────────────────────────
+function savePoids(){
+  const val=parseFloat(document.getElementById('poids-val').value);
+  if(!val||val<1){toast('Entre un poids valide !');return}
+  const dateVal=document.getElementById('poids-date').value||toDateStr(new Date());
+  if(!state.poids)state.poids=[];
+  // Replace if same date exists
+  const existing=state.poids.findIndex(p=>p.date===dateVal);
+  if(existing!==-1)state.poids[existing]={date:dateVal,val};
+  else state.poids.push({date:dateVal,val});
+  state.poids.sort((a,b)=>a.date.localeCompare(b.date));
+  save();renderStats();closeModal('poids');toast('Poids enregistré ✓');
+}
+
+function savePoidsObjectif(){
+  const val=parseFloat(document.getElementById('poids-objectif-input').value);
+  if(!val||val<1){toast('Entre un objectif valide !');return}
+  state.poidsObjectif=val;
+  save();renderStats();toast('Objectif mis à jour ✓');
+}
+
+function deletePoidsEntry(date){
+  state.poids=state.poids.filter(p=>p.date!==date);
+  save();renderStats();toast('Entrée supprimée');
+}
+
+function renderPoids(){
+  if(!state.poids)state.poids=[];
+  const entries=[...state.poids].sort((a,b)=>b.date.localeCompare(a.date));
+  const objectif=state.poidsObjectif;
+
+  // Set objectif input
+  const objInput=document.getElementById('poids-objectif-input');
+  if(objInput&&objectif)objInput.value=objectif;
+
+  // Stats row
+  const statsEl=document.getElementById('poids-stats-row');
+  if(entries.length===0){
+    statsEl.innerHTML=`<div style="color:var(--text3);font-size:13px;text-align:center;padding:8px 0;width:100%">Aucune donnée. Ajoute ton premier poids !</div>`;
+    document.getElementById('poids-graph').innerHTML='';
+    document.getElementById('poids-entry-list').innerHTML='';
+    return;
+  }
+  const last=entries[0].val;
+  const first=entries[entries.length-1].val;
+  const diff=+(last-first).toFixed(1);
+  const diffObj=objectif?+(last-objectif).toFixed(1):null;
+  const diffClass=diff<0?'green':'red';
+  statsEl.innerHTML=`
+    <div class="poids-stat"><div class="val">${last} kg</div><div class="lbl">Actuel</div></div>
+    <div class="poids-stat"><div class="val ${diffClass}">${diff>0?'+':''}${diff} kg</div><div class="lbl">Évolution</div></div>
+    ${objectif?`<div class="poids-stat"><div class="val ${diffObj>0?'red':'green'}">${diffObj>0?'+':''}${diffObj} kg</div><div class="lbl">Vs objectif</div></div>`:''}`;
+
+  // Graph (SVG sparkline)
+  const graphEl=document.getElementById('poids-graph');
+  if(entries.length>=2){
+    const sorted=[...entries].sort((a,b)=>a.date.localeCompare(b.date));
+    const vals=sorted.map(e=>e.val);
+    const minV=Math.min(...vals,objectif||Infinity)-1;
+    const maxV=Math.max(...vals,objectif||0)+1;
+    const W=300,H=80;
+    const px=(i)=>Math.round(i/(sorted.length-1)*(W-20)+10);
+    const py=(v)=>Math.round(H-((v-minV)/(maxV-minV))*H);
+    const pts=sorted.map((e,i)=>`${px(i)},${py(e.val)}`).join(' ');
+    const areaBottom=H+2;
+    const areaPath=`M${px(0)},${py(sorted[0].val)} `+sorted.slice(1).map((e,i)=>`L${px(i+1)},${py(e.val)}`).join(' ')+` L${px(sorted.length-1)},${areaBottom} L${px(0)},${areaBottom} Z`;
+    const objLine=objectif?`<line x1="10" y1="${py(objectif)}" x2="${W-10}" y2="${py(objectif)}" stroke="#fbbf24" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.7"/>
+      <text x="${W-12}" y="${py(objectif)-4}" font-size="9" fill="#fbbf24" text-anchor="end" font-family="monospace">${objectif}kg</text>`:'';
+    graphEl.innerHTML=`<svg viewBox="0 0 ${W} ${H+4}" preserveAspectRatio="none">
+      <defs><linearGradient id="pgr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7c6af7" stop-opacity=".3"/><stop offset="1" stop-color="#7c6af7" stop-opacity="0"/></linearGradient></defs>
+      <path d="${areaPath}" fill="url(#pgr)"/>
+      <polyline points="${pts}" fill="none" stroke="#a78bfa" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${objLine}
+      ${sorted.map((e,i)=>`<circle cx="${px(i)}" cy="${py(e.val)}" r="3" fill="#a78bfa"/>`).join('')}
+    </svg>`;
+  } else {
+    graphEl.innerHTML=`<div style="color:var(--text3);font-size:12px;text-align:center;padding-top:30px">Ajoute au moins 2 mesures pour voir le graphique.</div>`;
+  }
+
+  // Entry list
+  const listEl=document.getElementById('poids-entry-list');
+  listEl.innerHTML=entries.map((e,i)=>{
+    const prev=entries[i+1];
+    const delta=prev?+(e.val-prev.val).toFixed(1):null;
+    const deltaHTML=delta!==null?`<span class="poids-entry-delta ${delta>0?'pos':'neg'}">${delta>0?'▲':'▼'}${Math.abs(delta)}</span>`:'';
+    const d=new Date(e.date+'T12:00:00');
+    const dateStr=d.toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    return `<div class="poids-entry">
+      <span class="poids-entry-date">${dateStr}</span>
+      <span class="poids-entry-val">${e.val} kg</span>
+      ${deltaHTML}
+      <button class="delete-btn" onclick="deletePoidsEntry('${e.date}')" style="margin-left:6px">✕</button>
+    </div>`;
+  }).join('');
+}
 
 // ── NOTES CRUD ───────────────────────────────────────────
 function newNote(){
