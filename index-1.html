@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="DayGuide">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%231a1a2e'/%3E%3Crect width='512' height='512' rx='112' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c6af7' stop-opacity='.35'/%3E%3Cstop offset='1' stop-color='%23a78bfa' stop-opacity='.1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='256' cy='200' r='80' fill='none' stroke='%23a78bfa' stroke-width='28'/%3E%3Cline x1='256' y1='200' x2='256' y2='148' stroke='%23e8e8f0' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='256' y1='200' x2='298' y2='224' stroke='%237c6af7' stroke-width='18' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='200' r='10' fill='%23a78bfa'/%3E%3Crect x='136' y='330' width='240' height='22' rx='11' fill='%237c6af7' opacity='.7'/%3E%3Crect x='166' y='375' width='180' height='18' rx='9' fill='%23a78bfa' opacity='.45'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%231a1a2e'/%3E%3Crect width='512' height='512' rx='112' fill='url(%23g)'/%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%237c6af7' stop-opacity='.35'/%3E%3Cstop offset='1' stop-color='%23a78bfa' stop-opacity='.1'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='256' cy='200' r='80' fill='none' stroke='%23a78bfa' stroke-width='28'/%3E%3Cline x1='256' y1='200' x2='256' y2='148' stroke='%23e8e8f0' stroke-width='22' stroke-linecap='round'/%3E%3Cline x1='256' y1='200' x2='298' y2='224' stroke='%237c6af7' stroke-width='18' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='200' r='10' fill='%23a78bfa'/%3E%3Crect x='136' y='330' width='240' height='22' rx='11' fill='%237c6af7' opacity='.7'/%3E%3Crect x='166' y='375' width='180' height='18' rx='9' fill='%23a78bfa' opacity='.45'/%3E%3C/svg%3E">
+<title>DayGuide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0f1a; --surface:#1a1a2e; --surface2:#22223b; --border:#2e2e4a;
+    --accent:#7c6af7; --accent2:#a78bfa; --success:#34d399; --warning:#fbbf24;
+    --danger:#f87171; --text:#e8e8f0; --text2:#9090b0; --text3:#5a5a7a;
+    --radius:14px; --radius-sm:8px; --font:'DM Sans',sans-serif; --mono:'DM Mono',monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased}
+  button{font-family:var(--font);cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea,select{font-family:var(--font);color:var(--text)}
+
+  #app{display:flex;flex-direction:column;height:100dvh;max-width:480px;margin:0 auto;position:relative}
+  .screen{display:none;flex:1;overflow-y:auto;padding:0 0 80px;scrollbar-width:none}
+  .screen::-webkit-scrollbar{display:none}
+  .screen.active{display:flex;flex-direction:column}
+
+  /* HEADER */
+  .header{padding:52px 20px 12px;position:sticky;top:0;background:var(--bg);z-index:10}
+  .header-top{display:flex;align-items:flex-start;justify-content:space-between}
+  .header h1{font-size:26px;font-weight:600;letter-spacing:-.5px;line-height:1.1}
+  .date-label{font-size:12px;color:var(--accent2);font-weight:500;margin-bottom:4px;font-family:var(--mono);text-transform:uppercase;letter-spacing:1px}
+  .header-action{width:40px;height:40px;border-radius:50%;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;margin-top:4px;transition:background .15s}
+  .header-action:active{background:var(--border)}
+
+  /* NAV */
+  nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;background:var(--surface);border-top:1px solid var(--border);display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom,0)}
+  .nav-btn{flex:1;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:500;color:var(--text3);letter-spacing:.3px;transition:color .15s}
+  .nav-btn .icon{font-size:20px;transition:transform .15s}
+  .nav-btn.active{color:var(--accent2)}
+  .nav-btn.active .icon{transform:scale(1.12)}
+
+  /* CARDS */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:0 16px 10px}
+  .section-label{font-size:11px;font-weight:600;color:var(--text3);letter-spacing:1.2px;text-transform:uppercase;padding:14px 20px 6px;font-family:var(--mono)}
+
+  /* PROGRESS */
+  .progress-card{background:linear-gradient(135deg,rgba(124,106,247,.2),rgba(167,139,250,.1));border:1px solid rgba(124,106,247,.3);border-radius:var(--radius);padding:18px;margin:0 16px 12px}
+  .progress-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px}
+  .progress-numbers{display:flex;gap:20px}
+  .progress-stat .num{font-size:26px;font-weight:600;font-family:var(--mono);color:var(--accent2)}
+  .progress-stat .lbl{font-size:11px;color:var(--text2)}
+  .streak-badge{display:flex;flex-direction:column;align-items:center;background:rgba(251,191,36,.15);border:1px solid rgba(251,191,36,.3);border-radius:10px;padding:8px 12px}
+  .streak-num{font-size:22px;font-weight:600;font-family:var(--mono);color:var(--warning)}
+  .streak-lbl{font-size:10px;color:var(--warning);letter-spacing:.5px}
+  .progress-bar-bg{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+  .progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .4s ease}
+
+  /* TASK */
+  .task-item{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 16px 8px;transition:opacity .2s;position:relative}
+  .task-item.done{opacity:.4}
+  .check-btn{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s;background:transparent}
+  .check-btn.checked{background:var(--success);border-color:var(--success);color:#0f0f1a}
+  .task-content{flex:1;min-width:0}
+  .task-title{font-size:15px;font-weight:500;line-height:1.3}
+  .task-item.done .task-title{text-decoration:line-through;color:var(--text3)}
+  .task-meta{display:flex;gap:6px;margin-top:5px;align-items:center;flex-wrap:wrap}
+  .badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:20px;font-family:var(--mono);letter-spacing:.5px}
+  .badge-high{background:rgba(248,113,113,.15);color:var(--danger)}
+  .badge-medium{background:rgba(251,191,36,.15);color:var(--warning)}
+  .badge-low{background:rgba(52,211,153,.12);color:var(--success)}
+  .badge-tag{background:rgba(124,106,247,.15);color:var(--accent2)}
+  .badge-recur{background:rgba(167,139,250,.1);color:var(--accent2);font-size:9px}
+  .task-desc{font-size:13px;color:var(--text2);margin-top:3px}
+  .task-date{font-size:11px;color:var(--text3);font-family:var(--mono)}
+  .delete-btn{font-size:16px;color:var(--text3);padding:4px;border-radius:6px;flex-shrink:0;transition:color .15s}
+  .delete-btn:active{color:var(--danger)}
+
+  /* FILTER TABS */
+  .filter-tabs{display:flex;gap:6px;padding:0 16px 10px;overflow-x:auto;scrollbar-width:none}
+  .filter-tabs::-webkit-scrollbar{display:none}
+  .filter-tab{padding:6px 14px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap;transition:all .15s;flex-shrink:0}
+  .filter-tab.active{background:var(--accent);border-color:var(--accent);color:white}
+
+  /* REMINDER */
+  .reminder-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 16px 8px}
+  .reminder-icon{width:42px;height:42px;border-radius:12px;background:rgba(124,106,247,.15);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .reminder-info{flex:1;min-width:0}
+  .reminder-title{font-size:15px;font-weight:500}
+  .reminder-time{font-size:12px;color:var(--accent2);font-family:var(--mono);margin-top:2px}
+  .reminder-item.disabled .reminder-title{color:var(--text3)}
+  .toggle{width:44px;height:26px;border-radius:13px;background:var(--border);position:relative;cursor:pointer;transition:background .2s;flex-shrink:0}
+  .toggle.on{background:var(--accent)}
+  .toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:white;top:3px;left:3px;transition:transform .2s}
+  .toggle.on::after{transform:translateX(18px)}
+
+  /* NOTES */
+  .notes-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 10px}
+  .note-card{border-radius:var(--radius);padding:14px;cursor:pointer;border:1px solid transparent;min-height:100px;display:flex;flex-direction:column;transition:border-color .15s}
+  .note-card:active{border-color:var(--accent)}
+  .note-card-title{font-size:14px;font-weight:600;margin-bottom:6px;color:#1a1a2e}
+  .note-card-content{font-size:12px;color:#3a3a5e;line-height:1.5;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical}
+  .note-date{font-size:10px;color:rgba(26,26,46,.5);margin-top:8px;font-family:var(--mono)}
+
+  /* ROUTINE */
+  .routine-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin:0 16px 8px}
+  .routine-check{width:26px;height:26px;border-radius:8px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+  .routine-check.done{background:var(--accent);border-color:var(--accent)}
+  .routine-info{flex:1}
+  .routine-title{font-size:15px;font-weight:500}
+  .routine-item.done .routine-title{text-decoration:line-through;color:var(--text3)}
+  .routine-time{font-size:12px;color:var(--text2);font-family:var(--mono);margin-top:2px}
+
+  /* OBJECTIFS */
+  .goal-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin:0 16px 8px}
+  .goal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+  .goal-title{font-size:15px;font-weight:500}
+  .goal-pct{font-size:18px;font-weight:600;font-family:var(--mono);color:var(--accent2)}
+  .goal-progress-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px}
+  .goal-progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .4s}
+  .goal-footer{display:flex;justify-content:space-between;align-items:center}
+  .goal-values{font-size:12px;color:var(--text2);font-family:var(--mono)}
+  .goal-btns{display:flex;gap:8px}
+  .goal-btn{padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+  .goal-btn:active{background:var(--accent);color:white;border-color:var(--accent)}
+
+  /* STATS */
+  .stats-week{padding:0 16px 10px}
+  .week-bars{display:flex;align-items:flex-end;gap:6px;height:100px;margin-bottom:8px}
+  .week-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%}
+  .week-bar-bg{flex:1;width:100%;background:var(--surface2);border-radius:4px;overflow:hidden;display:flex;align-items:flex-end}
+  .week-bar-fill{width:100%;background:linear-gradient(0deg,var(--accent),var(--accent2));border-radius:4px;transition:height .4s ease;min-height:2px}
+  .week-bar-fill.today{background:linear-gradient(0deg,var(--success),#6ee7b7)}
+  .week-day{font-size:10px;color:var(--text3);font-family:var(--mono)}
+  .week-pct{font-size:9px;color:var(--text2);font-family:var(--mono)}
+  .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px 10px}
+  .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;text-align:center}
+  .stat-card .big{font-size:28px;font-weight:600;font-family:var(--mono);color:var(--accent2)}
+  .stat-card .lbl{font-size:12px;color:var(--text2);margin-top:4px}
+  .stat-card .sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+  /* MODAL */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:flex-end;backdrop-filter:blur(4px)}
+  .modal-overlay.open{display:flex}
+  .modal{background:var(--surface);border-top-left-radius:24px;border-top-right-radius:24px;padding:8px 20px 32px;width:100%;max-width:480px;margin:0 auto;animation:slideUp .25s ease;max-height:85vh;overflow-y:auto}
+  @keyframes slideUp{from{transform:translateY(100%);opacity:0}to{transform:translateY(0);opacity:1}}
+  .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:10px auto 20px}
+  .modal h2{font-size:20px;font-weight:600;margin-bottom:20px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:11px;font-weight:600;color:var(--text2);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;font-family:var(--mono)}
+  .field input,.field textarea,.field select{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:11px 14px;font-size:15px;outline:none;transition:border-color .15s;-webkit-appearance:none}
+  .field select{color:var(--text)}
+  .field select option{background:var(--surface2)}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+  .field textarea{resize:none;min-height:80px;line-height:1.5}
+  .btn-row{display:flex;gap:10px;margin-top:4px}
+  .btn{flex:1;padding:14px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;transition:opacity .15s}
+  .btn:active{opacity:.75}
+  .btn-primary{background:var(--accent);color:white}
+  .btn-ghost{background:var(--surface2);color:var(--text2)}
+
+  /* TAG PICKER */
+  .tag-picker{display:flex;gap:6px;flex-wrap:wrap}
+  .tag-opt{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:500;background:var(--surface2);border:1px solid var(--border);color:var(--text2);cursor:pointer;transition:all .15s}
+  .tag-opt.selected{background:rgba(124,106,247,.2);border-color:var(--accent);color:var(--accent2)}
+
+  /* COLOR PICKER */
+  .color-picker{display:flex;gap:10px;flex-wrap:wrap}
+  .color-dot{width:32px;height:32px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .15s}
+  .color-dot.selected{border-color:white;transform:scale(1.15)}
+
+  /* DAYS PICKER */
+  .days-picker{display:flex;gap:5px}
+  .day-btn{flex:1;padding:8px 2px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);font-size:11px;font-weight:600;color:var(--text2);text-align:center;transition:all .15s}
+  .day-btn.selected{background:var(--accent);border-color:var(--accent);color:white}
+
+  /* EMPTY */
+  .empty{text-align:center;padding:36px 20px;color:var(--text3)}
+  .empty .empty-icon{font-size:38px;margin-bottom:12px}
+  .empty p{font-size:14px;line-height:1.6}
+
+  /* TOAST */
+  #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:all .25s;white-space:nowrap;z-index:300;pointer-events:none}
+  #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* NOTE EDITOR */
+  .note-editor{display:none;position:fixed;inset:0;z-index:150;flex-direction:column}
+  .note-editor.open{display:flex}
+  .note-editor-header{display:flex;align-items:center;gap:12px;padding:52px 16px 12px}
+  .note-editor-body{flex:1;display:flex;flex-direction:column;padding:0 16px 16px;overflow:hidden}
+  .note-editor-title{font-size:22px;font-weight:600;background:transparent;border:none;outline:none;width:100%;margin-bottom:12px;letter-spacing:-.3px}
+  .note-editor-content{flex:1;background:transparent;border:none;outline:none;resize:none;font-size:15px;line-height:1.7;color:var(--text2);overflow-y:auto}
+  .note-back-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:20px}
+  .note-save-btn{margin-left:auto;padding:8px 16px;border-radius:20px;background:var(--accent);color:white;font-size:14px;font-weight:600}
+
+  /* FROMAGES */
+  .fromage-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin:0 16px 8px;display:flex;align-items:flex-start;gap:12px}
+  .fromage-item.appris{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.05)}
+  .fromage-check{width:24px;height:24px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s;margin-top:2px;cursor:pointer}
+  .fromage-check.checked{background:var(--success);border-color:var(--success);color:#0f0f1a}
+  .fromage-info{flex:1;min-width:0}
+  .fromage-week{font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:3px}
+  .fromage-name{font-size:16px;font-weight:600;letter-spacing:-.2px}
+  .fromage-item.appris .fromage-name{color:var(--success)}
+  .fromage-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .fromage-tag{font-size:10px;padding:2px 8px;border-radius:10px;font-family:var(--mono);font-weight:500}
+  .tag-region{background:rgba(124,106,247,.12);color:var(--accent2)}
+  .tag-lait{background:rgba(251,191,36,.12);color:var(--warning)}
+  .tag-technique{background:rgba(52,211,153,.1);color:var(--success)}
+  .tag-fabrication{background:rgba(248,113,113,.1);color:var(--danger)}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TODAY -->
+  <div class="screen active" id="screen-today">
+    <div class="header">
+      <div class="header-top">
+        <div>
+          <div class="date-label" id="today-day-label"></div>
+          <h1>Aujourd'hui</h1>
+        </div>
+      </div>
+    </div>
+    <div class="progress-card">
+      <div class="progress-top">
+        <div class="progress-numbers">
+          <div class="progress-stat"><div class="num" id="prog-done">0</div><div class="lbl">terminées</div></div>
+          <div class="progress-stat"><div class="num" id="prog-total">0</div><div class="lbl">au total</div></div>
+        </div>
+        <div class="streak-badge">
+          <div class="streak-num" id="streak-num">0</div>
+          <div class="streak-lbl">🔥 jours</div>
+        </div>
+      </div>
+      <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-bar" style="width:0%"></div></div>
+    </div>
+    <div class="section-label">Routines</div>
+    <div id="today-routines"></div>
+    <div class="section-label">Tâches du jour</div>
+    <div id="today-tasks"></div>
+  </div>
+
+  <!-- TASKS -->
+  <div class="screen" id="screen-tasks">
+    <div class="header">
+      <div class="header-top">
+        <div><div class="date-label">Gestion</div><h1>Tâches</h1></div>
+        <button class="header-action" onclick="openModal('task')">＋</button>
+      </div>
+    </div>
+    <div class="filter-tabs" id="task-filters">
+      <button class="filter-tab active" onclick="setTaskFilter('all',this)">Toutes</button>
+      <button class="filter-tab" onclick="setTaskFilter('Travail',this)">💼 Travail</button>
+      <button class="filter-tab" onclick="setTaskFilter('Perso',this)">🏠 Perso</button>
+      <button class="filter-tab" onclick="setTaskFilter('Sport',this)">💪 Sport</button>
+      <button class="filter-tab" onclick="setTaskFilter('Santé',this)">❤️ Santé</button>
+      <button class="filter-tab" onclick="setTaskFilter('Courses',this)">🛒 Courses</button>
+    </div>
+    <div id="task-list"></div>
+  </div>
+
+  <!-- REMINDERS -->
+  <div class="screen" id="screen-reminders">
+    <div class="header">
+      <div class="header-top">
+        <div><div class="date-label">Alertes</div><h1>Rappels</h1></div>
+        <button class="header-action" onclick="openModal('reminder')">＋</button>
+      </div>
+    </div>
+    <div id="reminder-list"></div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="screen" id="screen-notes">
+    <div class="header">
+      <div class="header-top">
+        <div><div class="date-label">Journal</div><h1>Notes</h1></div>
+        <button class="header-action" onclick="newNote()">＋</button>
+      </div>
+    </div>
+    <div class="notes-grid" id="note-list"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="screen" id="screen-stats">
+    <div class="header">
+      <div class="header-top">
+        <div><div class="date-label">Analyse</div><h1>Statistiques</h1></div>
+      </div>
+    </div>
+    <div class="section-label">Cette semaine</div>
+    <div class="stats-week">
+      <div class="week-bars" id="week-bars"></div>
+      <div style="display:flex;justify-content:space-between;padding:0 2px">
+        <span id="week-days-labels" style="display:contents"></span>
+      </div>
+    </div>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="section-label">Objectifs</div>
+    <div id="goal-list"></div>
+    <div style="padding:0 16px 8px">
+      <button class="btn btn-ghost" style="width:100%;font-size:13px;padding:10px" onclick="openModal('goal')">＋ Ajouter un objectif</button>
+    </div>
+  </div>
+
+  <!-- FROMAGES -->
+  <div class="screen" id="screen-fromages">
+    <div class="header">
+      <div class="header-top">
+        <div><div class="date-label">Apprentissage AOP</div><h1>🧀 Fromages</h1></div>
+      </div>
+      <div id="fromages-progress-wrap" style="margin-top:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:13px;color:var(--text2)">Progression</span>
+          <span id="fromages-count" style="font-size:13px;font-family:var(--mono);color:var(--accent2)">0 / 52</span>
+        </div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" id="fromages-bar" style="width:0%"></div></div>
+      </div>
+      <div class="filter-tabs" style="margin-top:10px;padding:0">
+        <button class="filter-tab active" onclick="setFromageFilter('all',this)">Tous</button>
+        <button class="filter-tab" onclick="setFromageFilter('Vache',this)">🐄 Vache</button>
+        <button class="filter-tab" onclick="setFromageFilter('Chèvre',this)">🐐 Chèvre</button>
+        <button class="filter-tab" onclick="setFromageFilter('Brebis',this)">🐑 Brebis</button>
+        <button class="filter-tab" onclick="setFromageFilter('appris',this)">✅ Appris</button>
+        <button class="filter-tab" onclick="setFromageFilter('non-appris',this)">⏳ À apprendre</button>
+      </div>
+    </div>
+    <div id="fromage-list"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <button class="nav-btn active" onclick="showScreen('today',this)"><span class="icon">☀️</span>Aujourd'hui</button>
+    <button class="nav-btn" onclick="showScreen('tasks',this)"><span class="icon">✅</span>Tâches</button>
+    <button class="nav-btn" onclick="showScreen('notes',this)"><span class="icon">📝</span>Notes</button>
+    <button class="nav-btn" onclick="showScreen('fromages',this)"><span class="icon">🧀</span>AOP</button>
+    <button class="nav-btn" onclick="showScreen('stats',this)"><span class="icon">📊</span>Stats</button>
+  </nav>
+</div>
+
+<!-- MODAL TASK -->
+<div class="modal-overlay" id="modal-task" onclick="closeModalOnBg(event,'task')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="task-modal-title">Nouvelle tâche</h2>
+    <input type="hidden" id="task-edit-id">
+    <div class="field"><label>Titre</label><input type="text" id="task-title" placeholder="Ex: Préparer la réunion…"></div>
+    <div class="field"><label>Description</label><textarea id="task-desc" placeholder="Détails…" style="min-height:60px"></textarea></div>
+    <div class="field">
+      <label>Tag</label>
+      <div class="tag-picker">
+        <button class="tag-opt" data-tag="Travail" onclick="toggleTag(this)">💼 Travail</button>
+        <button class="tag-opt" data-tag="Perso" onclick="toggleTag(this)">🏠 Perso</button>
+        <button class="tag-opt" data-tag="Sport" onclick="toggleTag(this)">💪 Sport</button>
+        <button class="tag-opt" data-tag="Santé" onclick="toggleTag(this)">❤️ Santé</button>
+        <button class="tag-opt" data-tag="Courses" onclick="toggleTag(this)">🛒 Courses</button>
+      </div>
+    </div>
+    <div class="field"><label>Priorité</label>
+      <select id="task-priority">
+        <option value="HIGH">🔴 Haute</option>
+        <option value="MEDIUM" selected>🟡 Moyenne</option>
+        <option value="LOW">🟢 Basse</option>
+      </select>
+    </div>
+    <div class="field"><label>Récurrence</label>
+      <select id="task-recur">
+        <option value="none">Aucune</option>
+        <option value="daily">Quotidienne</option>
+        <option value="weekly">Hebdomadaire</option>
+        <option value="monthly">Mensuelle</option>
+      </select>
+    </div>
+    <div class="field"><label>Échéance</label><input type="date" id="task-due"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('task')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveTask()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REMINDER -->
+<div class="modal-overlay" id="modal-reminder" onclick="closeModalOnBg(event,'reminder')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="reminder-modal-title">Nouveau rappel</h2>
+    <input type="hidden" id="reminder-edit-id">
+    <div class="field"><label>Titre</label><input type="text" id="reminder-title" placeholder="Ex: Médicaments…"></div>
+    <div class="field"><label>Description</label><input type="text" id="reminder-desc" placeholder="Détails…"></div>
+    <div class="field"><label>Heure</label><input type="time" id="reminder-time"></div>
+    <div class="field"><label>Répéter</label>
+      <select id="reminder-repeat">
+        <option value="0">Non — une seule fois</option>
+        <option value="1">Oui — tous les jours</option>
+      </select>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('reminder')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveReminder()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ROUTINE -->
+<div class="modal-overlay" id="modal-routine" onclick="closeModalOnBg(event,'routine')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="routine-modal-title">Nouvelle routine</h2>
+    <input type="hidden" id="routine-edit-id">
+    <div class="field"><label>Nom</label><input type="text" id="routine-title" placeholder="Ex: Méditation…"></div>
+    <div class="field"><label>Heure</label><input type="time" id="routine-time"></div>
+    <div class="field"><label>Jours</label>
+      <div class="days-picker" id="routine-days">
+        <button class="day-btn selected" data-day="1">Lu</button>
+        <button class="day-btn selected" data-day="2">Ma</button>
+        <button class="day-btn selected" data-day="3">Me</button>
+        <button class="day-btn selected" data-day="4">Je</button>
+        <button class="day-btn selected" data-day="5">Ve</button>
+        <button class="day-btn" data-day="6">Sa</button>
+        <button class="day-btn" data-day="7">Di</button>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('routine')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveRoutine()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GOAL -->
+<div class="modal-overlay" id="modal-goal" onclick="closeModalOnBg(event,'goal')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2 id="goal-modal-title">Nouvel objectif</h2>
+    <input type="hidden" id="goal-edit-id">
+    <div class="field"><label>Titre</label><input type="text" id="goal-title" placeholder="Ex: Lire 12 livres…"></div>
+    <div class="field"><label>Valeur cible</label><input type="number" id="goal-target" placeholder="Ex: 12" min="1"></div>
+    <div class="field"><label>Valeur actuelle</label><input type="number" id="goal-current" placeholder="Ex: 3" min="0"></div>
+    <div class="field"><label>Unité</label><input type="text" id="goal-unit" placeholder="Ex: livres, km, heures…"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('goal')">Annuler</button>
+      <button class="btn btn-primary" onclick="saveGoal()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- NOTE EDITOR -->
+<div class="note-editor" id="note-editor">
+  <div class="note-editor-header" id="note-editor-header">
+    <button class="note-back-btn" onclick="closeNote()">‹</button>
+    <button class="note-save-btn" onclick="saveNote()">Enregistrer</button>
+    <button class="delete-btn" onclick="deleteCurrentNote()" style="margin-left:8px">🗑️</button>
+  </div>
+  <div class="note-editor-body">
+    <input type="hidden" id="note-edit-id">
+    <input class="note-editor-title" id="note-editor-title" placeholder="Titre…">
+    <div class="field" style="margin-bottom:12px">
+      <div class="color-picker" id="note-color-picker">
+        <div class="color-dot selected" style="background:#FFFFFF" data-color="DEFAULT" onclick="selectNoteColor(this)"></div>
+        <div class="color-dot" style="background:#FFF9C4" data-color="YELLOW" onclick="selectNoteColor(this)"></div>
+        <div class="color-dot" style="background:#C8E6C9" data-color="GREEN" onclick="selectNoteColor(this)"></div>
+        <div class="color-dot" style="background:#BBDEFB" data-color="BLUE" onclick="selectNoteColor(this)"></div>
+        <div class="color-dot" style="background:#F8BBD0" data-color="PINK" onclick="selectNoteColor(this)"></div>
+        <div class="color-dot" style="background:#E1BEE7" data-color="PURPLE" onclick="selectNoteColor(this)"></div>
+        <div class="color-dot" style="background:#1a1a1a;border:2px solid #444" data-color="BLACK" onclick="selectNoteColor(this)"></div>
+      </div>
+    </div>
+    <textarea class="note-editor-content" id="note-editor-content" placeholder="Commence à écrire…"></textarea>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const NOTE_COLORS={DEFAULT:'#FFFFFF',YELLOW:'#FFF9C4',GREEN:'#C8E6C9',BLUE:'#BBDEFB',PINK:'#F8BBD0',PURPLE:'#E1BEE7',BLACK:'#1a1a1a'};
+const TAGS=['Travail','Perso','Sport','Santé','Courses'];
+
+let state={tasks:[],reminders:[],notes:[],routines:[],goals:[],streak:0,lastStreakDate:'',statsHistory:{},fromagesAppris:{}};
+let currentNoteColor='DEFAULT';
+let activeTaskFilter='all';
+let selectedTag='';
+
+// ── PERSISTENCE ──────────────────────────────────────────
+function load(){try{const s=localStorage.getItem('dayguide2');if(s)state={...state,...JSON.parse(s)}}catch(e){}}
+function save(){localStorage.setItem('dayguide2',JSON.stringify(state))}
+function nextId(arr){return arr.length>0?Math.max(...arr.map(x=>x.id))+1:1}
+
+// ── NAVIGATION ───────────────────────────────────────────
+function showScreen(name,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('screen-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  render();
+}
+
+// ── STREAK ───────────────────────────────────────────────
+function updateStreak(){
+  const today=toDateStr(new Date());
+  const yesterday=toDateStr(new Date(Date.now()-86400000));
+  const dayNum=new Date().getDay()===0?7:new Date().getDay();
+  const routines=state.routines.filter(r=>r.daysOfWeek.split(',').includes(String(dayNum)));
+  const tasks=state.tasks.filter(t=>!t.dueDate||isToday(t.dueDate));
+  const allItems=[...routines,...tasks];
+  if(allItems.length===0)return;
+  const allDone=routines.every(r=>r.completedDate===today)&&tasks.every(t=>t.isCompleted);
+  if(allDone){
+    if(state.lastStreakDate===yesterday){state.streak+=1}
+    else if(state.lastStreakDate!==today){state.streak=1}
+    state.lastStreakDate=today;
+    save();
+  }
+  // Save daily stats
+  if(!state.statsHistory[today]){
+    const done=[...routines.filter(r=>r.completedDate===today),...tasks.filter(t=>t.isCompleted)].length;
+    state.statsHistory[today]={done,total:allItems.length};
+    save();
+  }
+}
+
+function isToday(ts){
+  const d=new Date(ts),now=new Date();
+  return d.toDateString()===now.toDateString();
+}
+
+// ── RENDER TODAY ─────────────────────────────────────────
+function renderToday(){
+  const now=new Date();
+  const days=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+  const months=['jan','fév','mar','avr','mai','jun','jul','aoû','sep','oct','nov','déc'];
+  document.getElementById('today-day-label').textContent=`${days[now.getDay()]} ${now.getDate()} ${months[now.getMonth()]}`;
+  const today=toDateStr(now);
+  const dayNum=now.getDay()===0?7:now.getDay();
+  const routinesToday=state.routines.filter(r=>r.daysOfWeek.split(',').includes(String(dayNum)));
+  const routinesOther=state.routines.filter(r=>!r.daysOfWeek.split(',').includes(String(dayNum)));
+  const routines=routinesToday;
+  const el=document.getElementById('today-routines');
+  const DAY_NAMES=['','Lu','Ma','Me','Je','Ve','Sa','Di'];
+  if(state.routines.length===0){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🌅</div><p>Aucune routine.<br><button style="color:var(--accent2);margin-top:8px;font-size:14px" onclick="openModal('routine')">＋ Ajouter</button></p></div>`;
+  } else {
+    const todayHTML=routinesToday.length>0
+      ? routinesToday.map(r=>{
+          const done=r.completedDate===today;
+          return `<div class="routine-item ${done?'done':''}">
+            <button class="routine-check ${done?'done':''}" onclick="toggleRoutine(${r.id})">${done?'✓':''}</button>
+            <div class="routine-info"><div class="routine-title">${esc(r.title)}</div><div class="routine-time">${r.scheduledTime||''}</div></div>
+            <button class="delete-btn" style="font-size:15px;color:var(--text3);padding:4px 2px" onclick="editRoutine(${r.id})" title="Modifier">✏️</button>
+            <button class="delete-btn" onclick="deleteRoutine(${r.id})">✕</button>
+          </div>`;
+        }).join('')
+      : `<div class="empty" style="padding:16px 20px"><div class="empty-icon" style="font-size:28px">😴</div><p>Aucune routine prévue aujourd'hui.</p></div>`;
+    const otherHTML=routinesOther.length>0
+      ? `<div class="section-label" style="padding-top:6px;opacity:.45">Pas aujourd'hui</div>`
+        + routinesOther.map(r=>{
+            const days=r.daysOfWeek.split(',').map(d=>DAY_NAMES[parseInt(d)]||d).join(' · ');
+            return `<div class="routine-item" style="opacity:.55">
+              <div class="routine-check" style="border-color:var(--border)"></div>
+              <div class="routine-info">
+                <div class="routine-title" style="color:var(--text2)">${esc(r.title)}</div>
+                <div class="routine-time">${r.scheduledTime?r.scheduledTime+' · ':''}${days}</div>
+              </div>
+              <button class="delete-btn" style="font-size:15px;color:var(--text3);padding:4px 2px" onclick="editRoutine(${r.id})" title="Modifier">✏️</button>
+              <button class="delete-btn" onclick="deleteRoutine(${r.id})" title="Supprimer">✕</button>
+            </div>`;
+          }).join('')
+      : '';
+    el.innerHTML=todayHTML+otherHTML
+      +`<div style="padding:4px 16px 4px"><button class="btn btn-ghost" style="width:100%;font-size:13px;padding:9px" onclick="openModal('routine')">＋ Routine</button></div>`;
+  }
+  // Today's tasks
+  const tasks=state.tasks.filter(t=>!t.dueDate||isToday(t.dueDate)||t.recurrence!=='none');
+  const taskEl=document.getElementById('today-tasks');
+  if(tasks.length===0){
+    taskEl.innerHTML=`<div class="empty"><div class="empty-icon">🎉</div><p>Aucune tâche aujourd'hui !</p></div>`;
+  } else {
+    taskEl.innerHTML=tasks.map(t=>renderTaskHTML(t)).join('');
+  }
+  // Progress
+  const allItems=[...routines,...tasks];
+  const doneCount=[...routines.filter(r=>r.completedDate===today),...tasks.filter(t=>t.isCompleted)].length;
+  const total=allItems.length;
+  document.getElementById('prog-done').textContent=doneCount;
+  document.getElementById('prog-total').textContent=total;
+  document.getElementById('prog-bar').style.width=(total>0?Math.round(doneCount/total*100):0)+'%';
+  document.getElementById('streak-num').textContent=state.streak||0;
+  updateStreak();
+}
+
+// ── RENDER TASKS ─────────────────────────────────────────
+function renderTaskHTML(t){
+  const pb={HIGH:'<span class="badge badge-high">HAUTE</span>',MEDIUM:'<span class="badge badge-medium">MOY</span>',LOW:'<span class="badge badge-low">BASSE</span>'}[t.priority]||'';
+  const tb=t.tag?`<span class="badge badge-tag">${esc(t.tag)}</span>`:'';
+  const rb=t.recurrence&&t.recurrence!=='none'?`<span class="badge badge-recur">🔁 ${t.recurrence==='daily'?'Quotidien':t.recurrence==='weekly'?'Hebdo':'Mensuel'}</span>`:'';
+  const db=t.dueDate?`<span class="task-date">📅 ${new Date(t.dueDate).toLocaleDateString('fr-FR')}</span>`:'';
+  return `<div class="task-item ${t.isCompleted?'done':''}">
+    <button class="check-btn ${t.isCompleted?'checked':''}" onclick="toggleTask(${t.id})">${t.isCompleted?'✓':''}</button>
+    <div class="task-content" onclick="editTask(${t.id})">
+      <div class="task-title">${esc(t.title)}</div>
+      ${t.description?`<div class="task-desc">${esc(t.description)}</div>`:''}
+      <div class="task-meta">${pb}${tb}${rb}${db}</div>
+    </div>
+    <button class="delete-btn" onclick="deleteTask(${t.id})">✕</button>
+  </div>`;
+}
+
+function renderTasks(){
+  const el=document.getElementById('task-list');
+  let tasks=[...state.tasks];
+  if(activeTaskFilter!=='all') tasks=tasks.filter(t=>t.tag===activeTaskFilter);
+  if(tasks.length===0){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">✅</div><p>Aucune tâche${activeTaskFilter!=='all'?' dans cette catégorie':' pour l\'instant'}.</p></div>`;
+    return;
+  }
+  const sorted=tasks.sort((a,b)=>{
+    const p={HIGH:3,MEDIUM:2,LOW:1};
+    if(a.isCompleted!==b.isCompleted)return a.isCompleted?1:-1;
+    return (p[b.priority]||2)-(p[a.priority]||2);
+  });
+  el.innerHTML=sorted.map(renderTaskHTML).join('');
+}
+
+function setTaskFilter(filter,btn){
+  activeTaskFilter=filter;
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTasks();
+}
+
+// ── RENDER REMINDERS ─────────────────────────────────────
+function renderReminders(){
+  const el=document.getElementById('reminder-list');
+  if(state.reminders.length===0){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🔔</div><p>Aucun rappel.<br>Appuie sur ＋ pour en ajouter.</p></div>`;
+    return;
+  }
+  el.innerHTML=[...state.reminders].sort((a,b)=>a.triggerTime-b.triggerTime).map(r=>{
+    const d=new Date(r.triggerTime);
+    const timeStr=d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+    const dateStr=r.repeatDaily?'Tous les jours':d.toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'});
+    return `<div class="reminder-item ${r.isEnabled?'':'disabled'}">
+      <div class="reminder-icon ${r.isEnabled?'':'disabled'}">🔔</div>
+      <div class="reminder-info" onclick="editReminder(${r.id})">
+        <div class="reminder-title">${esc(r.title)}</div>
+        <div class="reminder-time">${timeStr} · ${dateStr}</div>
+      </div>
+      <div class="toggle ${r.isEnabled?'on':''}" onclick="toggleReminder(${r.id})"></div>
+      <button class="delete-btn" style="margin-left:8px" onclick="deleteReminder(${r.id})">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER NOTES ─────────────────────────────────────────
+function renderNotes(){
+  const el=document.getElementById('note-list');
+  if(state.notes.length===0){
+    el.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="empty-icon">📝</div><p>Aucune note.<br>Appuie sur ＋ pour commencer.</p></div>`;
+    return;
+  }
+  el.innerHTML=state.notes.map(n=>{
+    const bg=NOTE_COLORS[n.color]||'#FFFFFF';
+    const dark=n.color==='BLACK';
+    const titleCol=dark?'#f0f0f0':'#1a1a2e';
+    const contentCol=dark?'#aaaacc':'#3a3a5e';
+    const dateCol=dark?'rgba(255,255,255,0.35)':'rgba(26,26,46,.5)';
+    const d=new Date(n.updatedAt).toLocaleDateString('fr-FR',{day:'numeric',month:'short'});
+    return `<div class="note-card" style="background:${bg}" onclick="openNote(${n.id})">
+      <div class="note-card-title" style="color:${titleCol}">${esc(n.title||'Sans titre')}</div>
+      <div class="note-card-content" style="color:${contentCol}">${esc(n.content)}</div>
+      <div class="note-date" style="color:${dateCol}">${d}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER STATS ─────────────────────────────────────────
+function renderStats(){
+  // Week bars
+  const barsEl=document.getElementById('week-bars');
+  const dayNames=['Di','Lu','Ma','Me','Je','Ve','Sa'];
+  const today=new Date();
+  let weekData=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(today);d.setDate(today.getDate()-i);
+    const ds=toDateStr(d);
+    const hist=state.statsHistory[ds];
+    const pct=hist&&hist.total>0?Math.round(hist.done/hist.total*100):0;
+    weekData.push({day:dayNames[d.getDay()],pct,isToday:i===0});
+  }
+  barsEl.innerHTML=weekData.map(d=>`
+    <div class="week-bar-wrap">
+      <div class="week-bar-bg"><div class="week-bar-fill ${d.isToday?'today':''}" style="height:${d.pct}%"></div></div>
+      <div class="week-pct">${d.pct}%</div>
+      <div class="week-day">${d.day}</div>
+    </div>`).join('');
+
+  // Stats grid
+  const totalTasks=state.tasks.length;
+  const doneTasks=state.tasks.filter(t=>t.isCompleted).length;
+  const totalNotes=state.notes.length;
+  const totalRoutines=state.routines.length;
+  const avgPct=weekData.length>0?Math.round(weekData.reduce((a,b)=>a+b.pct,0)/weekData.length):0;
+  document.getElementById('stats-grid').innerHTML=`
+    <div class="stat-card"><div class="big">${doneTasks}/${totalTasks}</div><div class="lbl">Tâches</div><div class="sub">terminées</div></div>
+    <div class="stat-card"><div class="big">${state.streak||0}🔥</div><div class="lbl">Streak</div><div class="sub">jours consécutifs</div></div>
+    <div class="stat-card"><div class="big">${avgPct}%</div><div class="lbl">Moyenne</div><div class="sub">cette semaine</div></div>
+    <div class="stat-card"><div class="big">${totalNotes}</div><div class="lbl">Notes</div><div class="sub">créées</div></div>`;
+
+  // Goals
+  const gl=document.getElementById('goal-list');
+  if(state.goals.length===0){
+    gl.innerHTML=`<div class="empty"><div class="empty-icon">🎯</div><p>Aucun objectif.<br>Ajoutes-en un ci-dessous !</p></div>`;
+    return;
+  }
+  gl.innerHTML=state.goals.map(g=>{
+    const pct=g.target>0?Math.min(100,Math.round(g.current/g.target*100)):0;
+    return `<div class="goal-item">
+      <div class="goal-header">
+        <div class="goal-title">${esc(g.title)}</div>
+        <div class="goal-pct">${pct}%</div>
+      </div>
+      <div class="goal-progress-bg"><div class="goal-progress-fill" style="width:${pct}%"></div></div>
+      <div class="goal-footer">
+        <div class="goal-values">${g.current} / ${g.target} ${esc(g.unit||'')}</div>
+        <div class="goal-btns">
+          <button class="goal-btn" onclick="updateGoal(${g.id},-1)">−</button>
+          <button class="goal-btn" onclick="updateGoal(${g.id},1)">＋</button>
+          <button class="delete-btn" onclick="deleteGoal(${g.id})">✕</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function render(){renderToday();renderTasks();renderReminders();renderNotes();renderStats();renderFromages();}
+
+// ── TASKS CRUD ───────────────────────────────────────────
+function toggleTag(btn){
+  document.querySelectorAll('.tag-opt').forEach(b=>b.classList.remove('selected'));
+  if(selectedTag===btn.dataset.tag){selectedTag=''}
+  else{btn.classList.add('selected');selectedTag=btn.dataset.tag}
+}
+
+function openModal(type){
+  if(type==='task'){
+    document.getElementById('task-modal-title').textContent='Nouvelle tâche';
+    document.getElementById('task-edit-id').value='';
+    document.getElementById('task-title').value='';
+    document.getElementById('task-desc').value='';
+    document.getElementById('task-priority').value='MEDIUM';
+    document.getElementById('task-recur').value='none';
+    document.getElementById('task-due').value='';
+    selectedTag='';
+    document.querySelectorAll('.tag-opt').forEach(b=>b.classList.remove('selected'));
+  } else if(type==='reminder'){
+    document.getElementById('reminder-modal-title').textContent='Nouveau rappel';
+    document.getElementById('reminder-edit-id').value='';
+    document.getElementById('reminder-title').value='';
+    document.getElementById('reminder-desc').value='';
+    const now=new Date();
+    document.getElementById('reminder-time').value=String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0');
+    document.getElementById('reminder-repeat').value='0';
+  } else if(type==='routine'){
+    document.getElementById('routine-modal-title').textContent='Nouvelle routine';
+    document.getElementById('routine-edit-id').value='';
+    document.getElementById('routine-title').value='';
+    document.getElementById('routine-time').value='07:00';
+    document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('selected',['1','2','3','4','5'].includes(b.dataset.day)));
+  } else if(type==='goal'){
+    document.getElementById('goal-modal-title').textContent='Nouvel objectif';
+    document.getElementById('goal-edit-id').value='';
+    document.getElementById('goal-title').value='';
+    document.getElementById('goal-target').value='';
+    document.getElementById('goal-current').value='0';
+    document.getElementById('goal-unit').value='';
+  }
+  document.getElementById('modal-'+type).classList.add('open');
+}
+
+function closeModal(type){document.getElementById('modal-'+type).classList.remove('open')}
+function closeModalOnBg(e,type){if(e.target===document.getElementById('modal-'+type))closeModal(type)}
+
+function saveTask(){
+  const title=document.getElementById('task-title').value.trim();
+  if(!title){toast('Entre un titre !');return}
+  const editId=parseInt(document.getElementById('task-edit-id').value);
+  const dueVal=document.getElementById('task-due').value;
+  const task={
+    id:editId||nextId(state.tasks),title,
+    description:document.getElementById('task-desc').value.trim(),
+    isCompleted:false,priority:document.getElementById('task-priority').value,
+    tag:selectedTag,recurrence:document.getElementById('task-recur').value,
+    dueDate:dueVal?new Date(dueVal).getTime():null,createdAt:Date.now()
+  };
+  if(editId){const i=state.tasks.findIndex(t=>t.id===editId);if(i!==-1){task.isCompleted=state.tasks[i].isCompleted;state.tasks[i]=task}}
+  else state.tasks.push(task);
+  save();render();closeModal('task');toast(editId?'Tâche modifiée ✓':'Tâche ajoutée ✓');
+}
+
+function editTask(id){
+  const t=state.tasks.find(x=>x.id===id);if(!t)return;
+  document.getElementById('task-modal-title').textContent='Modifier la tâche';
+  document.getElementById('task-edit-id').value=t.id;
+  document.getElementById('task-title').value=t.title;
+  document.getElementById('task-desc').value=t.description;
+  document.getElementById('task-priority').value=t.priority;
+  document.getElementById('task-recur').value=t.recurrence||'none';
+  if(t.dueDate)document.getElementById('task-due').value=new Date(t.dueDate).toISOString().split('T')[0];
+  selectedTag=t.tag||'';
+  document.querySelectorAll('.tag-opt').forEach(b=>b.classList.toggle('selected',b.dataset.tag===selectedTag));
+  openModal('task');
+}
+
+function toggleTask(id){
+  const t=state.tasks.find(x=>x.id===id);
+  if(!t)return;
+  t.isCompleted=!t.isCompleted;
+  // Handle recurrence: if done and recurring, reset for next occurrence
+  if(t.isCompleted&&t.recurrence&&t.recurrence!=='none'){
+    setTimeout(()=>{
+      t.isCompleted=false;
+      if(t.recurrence==='daily')t.dueDate=(t.dueDate||Date.now())+86400000;
+      else if(t.recurrence==='weekly')t.dueDate=(t.dueDate||Date.now())+7*86400000;
+      else if(t.recurrence==='monthly'){const d=new Date(t.dueDate||Date.now());d.setMonth(d.getMonth()+1);t.dueDate=d.getTime()}
+      save();render();
+    },1500);
+  }
+  save();render();updateStreak();
+}
+
+function deleteTask(id){state.tasks=state.tasks.filter(x=>x.id!==id);save();render();toast('Tâche supprimée')}
+
+// ── REMINDERS CRUD ───────────────────────────────────────
+function saveReminder(){
+  const title=document.getElementById('reminder-title').value.trim();
+  if(!title){toast('Entre un titre !');return}
+  const timeVal=document.getElementById('reminder-time').value;
+  if(!timeVal){toast('Choisis une heure !');return}
+  const[h,m]=timeVal.split(':').map(Number);
+  const trigger=new Date();trigger.setHours(h,m,0,0);
+  if(trigger<=new Date())trigger.setDate(trigger.getDate()+1);
+  const editId=parseInt(document.getElementById('reminder-edit-id').value);
+  const reminder={
+    id:editId||nextId(state.reminders),title,
+    description:document.getElementById('reminder-desc').value.trim(),
+    triggerTime:trigger.getTime(),isEnabled:true,
+    repeatDaily:document.getElementById('reminder-repeat').value==='1',createdAt:Date.now()
+  };
+  if(editId){const i=state.reminders.findIndex(r=>r.id===editId);if(i!==-1){reminder.isEnabled=state.reminders[i].isEnabled;state.reminders[i]=reminder}}
+  else state.reminders.push(reminder);
+  save();scheduleNotifications();render();closeModal('reminder');toast(editId?'Rappel modifié ✓':'Rappel ajouté ✓');
+}
+
+function editReminder(id){
+  const r=state.reminders.find(x=>x.id===id);if(!r)return;
+  document.getElementById('reminder-modal-title').textContent='Modifier le rappel';
+  document.getElementById('reminder-edit-id').value=r.id;
+  document.getElementById('reminder-title').value=r.title;
+  document.getElementById('reminder-desc').value=r.description;
+  const d=new Date(r.triggerTime);
+  document.getElementById('reminder-time').value=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('reminder-repeat').value=r.repeatDaily?'1':'0';
+  openModal('reminder');
+}
+
+function toggleReminder(id){const r=state.reminders.find(x=>x.id===id);if(r){r.isEnabled=!r.isEnabled;save();scheduleNotifications();render()}}
+function deleteReminder(id){state.reminders=state.reminders.filter(x=>x.id!==id);save();render();toast('Rappel supprimé')}
+
+// ── ROUTINES CRUD ────────────────────────────────────────
+function saveRoutine(){
+  const title=document.getElementById('routine-title').value.trim();
+  if(!title){toast('Entre un nom !');return}
+  const days=[...document.querySelectorAll('.day-btn.selected')].map(b=>b.dataset.day).join(',');
+  if(!days){toast('Choisis au moins un jour !');return}
+  const editId=parseInt(document.getElementById('routine-edit-id').value);
+  const routine={id:editId||nextId(state.routines),title,scheduledTime:document.getElementById('routine-time').value,daysOfWeek:days,isCompleted:false,completedDate:'',createdAt:Date.now()};
+  if(editId){const i=state.routines.findIndex(r=>r.id===editId);if(i!==-1)state.routines[i]={...state.routines[i],...routine}}
+  else state.routines.push(routine);
+  save();render();closeModal('routine');toast(editId?'Routine modifiée ✓':'Routine ajoutée ✓');
+}
+
+function toggleRoutine(id){
+  const r=state.routines.find(x=>x.id===id);if(!r)return;
+  const today=toDateStr(new Date());
+  r.completedDate=r.completedDate===today?'':today;
+  r.isCompleted=r.completedDate===today;
+  save();updateStreak();render();
+}
+
+function deleteRoutine(id){state.routines=state.routines.filter(x=>x.id!==id);save();render();toast('Routine supprimée')}
+
+function editRoutine(id){
+  const r=state.routines.find(x=>x.id===id);if(!r)return;
+  document.getElementById('routine-modal-title').textContent='Modifier la routine';
+  document.getElementById('routine-edit-id').value=r.id;
+  document.getElementById('routine-title').value=r.title;
+  document.getElementById('routine-time').value=r.scheduledTime||'07:00';
+  const selectedDays=r.daysOfWeek.split(',');
+  document.querySelectorAll('.day-btn').forEach(b=>b.classList.toggle('selected',selectedDays.includes(b.dataset.day)));
+  document.getElementById('modal-routine').classList.add('open');
+}
+
+document.querySelectorAll('.day-btn').forEach(btn=>btn.addEventListener('click',()=>btn.classList.toggle('selected')));
+
+// ── GOALS CRUD ───────────────────────────────────────────
+function saveGoal(){
+  const title=document.getElementById('goal-title').value.trim();
+  if(!title){toast('Entre un titre !');return}
+  const target=parseFloat(document.getElementById('goal-target').value)||1;
+  const current=parseFloat(document.getElementById('goal-current').value)||0;
+  const editId=parseInt(document.getElementById('goal-edit-id').value);
+  const goal={id:editId||nextId(state.goals),title,target,current,unit:document.getElementById('goal-unit').value.trim(),createdAt:Date.now()};
+  if(editId){const i=state.goals.findIndex(g=>g.id===editId);if(i!==-1)state.goals[i]=goal}
+  else state.goals.push(goal);
+  save();render();closeModal('goal');toast(editId?'Objectif modifié ✓':'Objectif ajouté ✓');
+}
+
+function updateGoal(id,delta){
+  const g=state.goals.find(x=>x.id===id);
+  if(!g)return;
+  g.current=Math.max(0,Math.min(g.target,g.current+delta));
+  if(g.current>=g.target)toast('🎉 Objectif atteint !');
+  save();renderStats();
+}
+
+function deleteGoal(id){state.goals=state.goals.filter(x=>x.id!==id);save();renderStats();toast('Objectif supprimé')}
+
+// ── NOTES CRUD ───────────────────────────────────────────
+function newNote(){
+  document.getElementById('note-edit-id').value='';
+  document.getElementById('note-editor-title').value='';
+  document.getElementById('note-editor-content').value='';
+  currentNoteColor='DEFAULT';
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.toggle('selected',d.dataset.color==='DEFAULT'));
+  setNoteEditorBg();
+  document.getElementById('note-editor').classList.add('open');
+  setTimeout(()=>document.getElementById('note-editor-title').focus(),100);
+}
+
+function openNote(id){
+  const n=state.notes.find(x=>x.id===id);if(!n)return;
+  document.getElementById('note-edit-id').value=n.id;
+  document.getElementById('note-editor-title').value=n.title;
+  document.getElementById('note-editor-content').value=n.content;
+  currentNoteColor=n.color||'DEFAULT';
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.toggle('selected',d.dataset.color===currentNoteColor));
+  setNoteEditorBg();
+  document.getElementById('note-editor').classList.add('open');
+}
+
+function closeNote(){
+  document.getElementById('note-editor').classList.remove('open');
+  document.getElementById('note-editor').style.background='';
+  document.getElementById('note-editor-header').style.background='';
+}
+
+function saveNote(){
+  const title=document.getElementById('note-editor-title').value.trim();
+  const content=document.getElementById('note-editor-content').value.trim();
+  if(!title&&!content){closeNote();return}
+  const editId=parseInt(document.getElementById('note-edit-id').value);
+  const now=Date.now();
+  if(editId){const i=state.notes.findIndex(n=>n.id===editId);if(i!==-1)state.notes[i]={...state.notes[i],title,content,color:currentNoteColor,updatedAt:now}}
+  else state.notes.unshift({id:nextId(state.notes),title,content,color:currentNoteColor,createdAt:now,updatedAt:now});
+  save();render();closeNote();toast('Note enregistrée ✓');
+}
+
+function deleteCurrentNote(){
+  const id=parseInt(document.getElementById('note-edit-id').value);
+  if(!id){closeNote();return}
+  state.notes=state.notes.filter(n=>n.id!==id);
+  save();render();closeNote();toast('Note supprimée');
+}
+
+function selectNoteColor(el){
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');currentNoteColor=el.dataset.color;setNoteEditorBg();
+}
+
+function setNoteEditorBg(){
+  const bg=NOTE_COLORS[currentNoteColor]||'#FFFFFF';
+  const dark=currentNoteColor==='BLACK';
+  const titleCol=dark?'#f0f0f0':'#1a1a2e';
+  const contentCol=dark?'#aaaacc':'#3a3a5e';
+  document.getElementById('note-editor').style.background=bg;
+  document.getElementById('note-editor-header').style.background=bg;
+  document.getElementById('note-editor-title').style.color=titleCol;
+  document.getElementById('note-editor-content').style.color=contentCol;
+}
+
+// ── FROMAGES DATA ────────────────────────────────────────
+const FROMAGES=[
+  {s:1,n:"Abondance",r:"Auvergne-Rhône-Alpes",p:"Haute-Savoie",l:"Vache",t:"Pâte pressée cuite",f:"Lait cru"},
+  {s:2,n:"Beaufort",r:"Auvergne-Rhône-Alpes",p:"Savoie, Haute-Savoie",l:"Vache",t:"Pâte pressée cuite",f:"Lait cru"},
+  {s:3,n:"Reblochon",r:"Auvergne-Rhône-Alpes",p:"Savoie, Haute-Savoie",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:4,n:"Tome des Bauges",r:"Auvergne-Rhône-Alpes",p:"Savoie, Haute-Savoie",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:5,n:"Bleu du Vercors-Sassenage",r:"Auvergne-Rhône-Alpes",p:"Drôme, Isère",l:"Vache",t:"Pâte persillée",f:"Cru ou thermisé"},
+  {s:6,n:"Fourme de Montbrison",r:"Auvergne-Rhône-Alpes",p:"Loire, Puy-de-Dôme",l:"Vache",t:"Pâte persillée",f:"Lait cru"},
+  {s:7,n:"Bleu d'Auvergne",r:"Auvergne-Rhône-Alpes",p:"Cantal, Puy-de-Dôme",l:"Vache",t:"Pâte persillée",f:"Cru ou pasteurisé"},
+  {s:8,n:"Cantal",r:"Auvergne-Rhône-Alpes",p:"Cantal, Aveyron, Corrèze, Puy-de-Dôme",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:9,n:"Fourme d'Ambert",r:"Auvergne-Rhône-Alpes",p:"Puy-de-Dôme, Loire",l:"Vache",t:"Pâte persillée",f:"Lait cru"},
+  {s:10,n:"Saint-Nectaire",r:"Auvergne-Rhône-Alpes",p:"Puy-de-Dôme, Cantal",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:11,n:"Salers",r:"Auvergne-Rhône-Alpes",p:"Cantal, Corrèze, Haute-Loire",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:12,n:"Bleu de Gex Haut-Jura",r:"Bourgogne-Franche-Comté",p:"Ain, Jura",l:"Vache",t:"Pâte persillée",f:"Lait cru"},
+  {s:13,n:"Comté",r:"Bourgogne-Franche-Comté",p:"Doubs, Jura, Ain",l:"Vache",t:"Pâte pressée cuite",f:"Lait cru"},
+  {s:14,n:"Mont d'Or",r:"Bourgogne-Franche-Comté",p:"Doubs",l:"Vache",t:"Pâte molle à croûte lavée",f:"Lait cru"},
+  {s:15,n:"Morbier",r:"Bourgogne-Franche-Comté",p:"Doubs, Jura, Ain",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:16,n:"Époisses",r:"Bourgogne-Franche-Comté",p:"Côte-d'Or, Yonne",l:"Vache",t:"Pâte molle à croûte lavée",f:"Cru ou thermisé"},
+  {s:17,n:"Chaource",r:"Grand Est",p:"Aube, Yonne",l:"Vache",t:"Pâte molle à croûte fleurie",f:"Cru ou pasteurisé"},
+  {s:18,n:"Langres",r:"Grand Est",p:"Haute-Marne, Vosges",l:"Vache",t:"Pâte molle à croûte lavée",f:"Lait cru"},
+  {s:19,n:"Munster",r:"Grand Est",p:"Vosges, Haut-Rhin, Bas-Rhin",l:"Vache",t:"Pâte molle à croûte lavée",f:"Cru ou pasteurisé"},
+  {s:20,n:"Maroilles",r:"Hauts-de-France",p:"Nord, Aisne",l:"Vache",t:"Pâte molle à croûte lavée",f:"Lait cru"},
+  {s:21,n:"Brie de Meaux",r:"Île-de-France",p:"Seine-et-Marne",l:"Vache",t:"Pâte molle à croûte fleurie",f:"Lait cru"},
+  {s:22,n:"Brie de Melun",r:"Île-de-France",p:"Seine-et-Marne",l:"Vache",t:"Pâte molle à croûte fleurie",f:"Lait cru"},
+  {s:23,n:"Camembert de Normandie",r:"Normandie",p:"Calvados, Manche, Orne",l:"Vache",t:"Pâte molle à croûte fleurie",f:"Lait cru"},
+  {s:24,n:"Livarot",r:"Normandie",p:"Calvados, Orne",l:"Vache",t:"Pâte molle à croûte lavée",f:"Lait cru"},
+  {s:25,n:"Neufchâtel",r:"Normandie",p:"Seine-Maritime",l:"Vache",t:"Pâte molle à croûte fleurie",f:"Lait cru"},
+  {s:26,n:"Pont-l'Évêque",r:"Normandie",p:"Normandie",l:"Vache",t:"Pâte molle à croûte lavée",f:"Lait cru"},
+  {s:27,n:"Bleu des Causses",r:"Occitanie",p:"Aveyron, Lozère, Lot",l:"Vache",t:"Pâte persillée",f:"Lait cru"},
+  {s:28,n:"Laguiole",r:"Occitanie",p:"Aveyron, Cantal, Lozère",l:"Vache",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:29,n:"Picodon",r:"Auvergne-Rhône-Alpes",p:"Ardèche, Drôme",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:30,n:"Rigotte de Condrieu",r:"Auvergne-Rhône-Alpes",p:"Loire, Rhône",l:"Chèvre",t:"Pâte molle fleurie",f:"Lait cru"},
+  {s:31,n:"Chevrotin",r:"Auvergne-Rhône-Alpes",p:"Savoie, Haute-Savoie",l:"Chèvre",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:32,n:"Charolais",r:"Bourgogne-Franche-Comté",p:"Saône-et-Loire",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:33,n:"Mâconnais",r:"Bourgogne-Franche-Comté",p:"Saône-et-Loire",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:34,n:"Crottin de Chavignol",r:"Centre-Val de Loire",p:"Cher",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:35,n:"Pouligny-Saint-Pierre",r:"Centre-Val de Loire",p:"Indre",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:36,n:"Sainte-Maure-de-Touraine",r:"Centre-Val de Loire",p:"Indre-et-Loire",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:37,n:"Selles-sur-Cher",r:"Centre-Val de Loire",p:"Cher, Indre",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:38,n:"Valençay",r:"Centre-Val de Loire",p:"Indre, Cher",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:39,n:"Pélardon",r:"Occitanie",p:"Gard, Hérault, Lozère",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:40,n:"Rocamadour",r:"Occitanie",p:"Lot",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:41,n:"Banon",r:"PACA",p:"Alpes-de-Haute-Provence",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:42,n:"Brousse du Rove",r:"PACA",p:"Bouches-du-Rhône",l:"Chèvre",t:"Fromage frais",f:"Lait cru"},
+  {s:43,n:"Chabichou du Poitou",r:"Nouvelle-Aquitaine",p:"Deux-Sèvres, Vienne",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:44,n:"Mothais sur feuille",r:"Nouvelle-Aquitaine",p:"Deux-Sèvres, Vienne",l:"Chèvre",t:"Pâte molle croûte naturelle",f:"Lait cru"},
+  {s:45,n:"Ossau-Iraty",r:"Nouvelle-Aquitaine",p:"Pyrénées-Atlantiques, Hautes-Pyrénées",l:"Brebis",t:"Pâte pressée non cuite",f:"Lait cru"},
+  {s:46,n:"Roquefort",r:"Occitanie",p:"Aveyron",l:"Brebis",t:"Pâte persillée",f:"Lait cru"},
+  {s:47,n:"Brocciu",r:"Corse",p:"Haute-Corse, Corse-du-Sud",l:"Brebis/Chèvre",t:"Fromage frais",f:"Lait cru"},
+  {s:48,n:"Beurre Charentes-Poitou",r:"Nouvelle-Aquitaine",p:"Charente, Deux-Sèvres",l:"Vache",t:"Beurre",f:"Pasteurisé"},
+  {s:49,n:"Beurre d'Isigny",r:"Normandie",p:"Calvados, Manche",l:"Vache",t:"Beurre",f:"Pasteurisé"},
+  {s:50,n:"Beurre de Bresse",r:"Bourgogne-Franche-Comté",p:"Ain, Saône-et-Loire",l:"Vache",t:"Beurre",f:"Pasteurisé"},
+  {s:51,n:"Crème d'Isigny",r:"Normandie",p:"Calvados, Manche",l:"Vache",t:"Crème",f:"Pasteurisée"},
+  {s:52,n:"Crème de Bresse",r:"Bourgogne-Franche-Comté",p:"Ain, Saône-et-Loire",l:"Vache",t:"Crème",f:"Pasteurisée"}
+];
+
+let fromageFilter='all';
+
+function setFromageFilter(f,btn){
+  fromageFilter=f;
+  document.querySelectorAll('#screen-fromages .filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFromages();
+}
+
+function toggleFromage(semaine){
+  if(!state.fromagesAppris)state.fromagesAppris={};
+  state.fromagesAppris[semaine]=!state.fromagesAppris[semaine];
+  save();renderFromages();
+  const f=FROMAGES.find(x=>x.s===semaine);
+  if(state.fromagesAppris[semaine])toast('🧀 '+f.n+' appris !');
+}
+
+function renderFromages(){
+  if(!state.fromagesAppris)state.fromagesAppris={};
+  const apprisCount=FROMAGES.filter(f=>state.fromagesAppris[f.s]).length;
+  const pct=Math.round(apprisCount/FROMAGES.length*100);
+  document.getElementById('fromages-count').textContent=apprisCount+' / '+FROMAGES.length;
+  document.getElementById('fromages-bar').style.width=pct+'%';
+
+  let list=FROMAGES;
+  if(fromageFilter==='appris') list=FROMAGES.filter(f=>state.fromagesAppris[f.s]);
+  else if(fromageFilter==='non-appris') list=FROMAGES.filter(f=>!state.fromagesAppris[f.s]);
+  else if(fromageFilter!=='all') list=FROMAGES.filter(f=>f.l===fromageFilter||f.l.includes(fromageFilter));
+
+  const el=document.getElementById('fromage-list');
+  if(list.length===0){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🧀</div><p>Aucun fromage dans cette catégorie.</p></div>`;
+    return;
+  }
+  el.innerHTML=list.map(f=>{
+    const appris=!!state.fromagesAppris[f.s];
+    return `<div class="fromage-item ${appris?'appris':''}">
+      <div class="fromage-check ${appris?'checked':''}" onclick="toggleFromage(${f.s})">${appris?'✓':''}</div>
+      <div class="fromage-info">
+        <div class="fromage-week">Semaine ${f.s}</div>
+        <div class="fromage-name">${esc(f.n)}</div>
+        <div class="fromage-tags">
+          <span class="fromage-tag tag-region">📍 ${esc(f.r)}</span>
+          <span class="fromage-tag tag-lait">${f.l==='Vache'?'🐄':f.l==='Chèvre'?'🐐':f.l==='Brebis'?'🐑':'🥛'} ${esc(f.l)}</span>
+          <span class="fromage-tag tag-technique">${esc(f.t)}</span>
+          <span class="fromage-tag tag-fabrication">${esc(f.f)}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+let notifTimers=[];
+function scheduleNotifications(){
+  notifTimers.forEach(clearTimeout);notifTimers=[];
+  if(!('Notification'in window)||Notification.permission!=='granted')return;
+  const now=Date.now();
+  state.reminders.filter(r=>r.isEnabled).forEach(r=>{
+    let trigger=r.triggerTime;
+    if(r.repeatDaily){while(trigger<=now)trigger+=86400000}
+    if(trigger>now){
+      const id=setTimeout(()=>{
+        new Notification('🔔 '+r.title,{body:r.description||'Rappel DayGuide',tag:'reminder-'+r.id});
+        if(r.repeatDaily){r.triggerTime=trigger+86400000;save();scheduleNotifications()}
+      },Math.min(trigger-now,2147483647));
+      notifTimers.push(id);
+    }
+  });
+}
+
+function requestNotifPermission(){
+  if('Notification'in window&&Notification.permission==='default'){
+    Notification.requestPermission().then(p=>{if(p==='granted'){scheduleNotifications();toast('Notifications activées 🔔')}});
+  }
+}
+
+// ── HELPERS ──────────────────────────────────────────────
+function esc(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function toDateStr(d){return d.toISOString().split('T')[0]}
+function toast(msg){
+  const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── INIT ─────────────────────────────────────────────────
+load();render();requestNotifPermission();scheduleNotifications();
+function scheduleMidnightReset(){
+  const now=new Date(),midnight=new Date(now);midnight.setHours(24,0,0,0);
+  setTimeout(()=>{render();scheduleMidnightReset()},midnight-now);
+}
+scheduleMidnightReset();
+</script>
+</body>
+</html>
